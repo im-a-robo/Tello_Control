@@ -51,7 +51,7 @@ class FrontEnd(object):
         self.speed = 10
 
         self.send_rc_control = False
-        self.deadzone = 20
+        self.deadzone = 15
 
         # create update timer
         pygame.time.set_timer(pygame.USEREVENT + 1, 1000 // FPS)
@@ -142,10 +142,10 @@ class FrontEnd(object):
             self.send_rc_control = False
 
     def get_joystick_power(self, joystick, axis):
-        if abs(np.round((joystick.get_axis(axis) * S), 1)) < self.deadzone:
+        if abs(np.round((joystick.get_axis(axis) * S), 0)) < self.deadzone:
             power = 0
         else:
-            power = np.round((joystick.get_axis(axis) * S), 1)
+            power = np.round((joystick.get_axis(axis) * S), 0)
 
         return power
 
