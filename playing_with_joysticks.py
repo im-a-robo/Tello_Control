@@ -23,6 +23,15 @@ pygame.init()
 
 max_speed = 120
 
+def get_joystick_power(joystick, axis):
+    global max_speed
+    if abs(np.round((joystick.get_axis(axis) * max_speed), 1)) < 20:
+        power = 0
+    else:
+        power = np.round((joystick.get_axis(axis) * max_speed), 1)
+
+    return power
+
 joystick_count=pygame.joystick.get_count()
 if joystick_count == 0:
 	# No joysticks!
@@ -41,6 +50,6 @@ while not should_stop:
             if event.key == pygame.K_ESCAPE:
                 should_stop = True
 
-    print("axis1 {} axis2 {}".format(np.round((my_joystick.get_axis(2) * max_speed), 1), np.round((my_joystick.get_axis(3) * max_speed), 1)))
+    print("X_axis {} Y_axis {}".format(get_joystick_power(my_joystick, 2), get_joystick_power(my_joystick, 3) * -1))
 
     time.sleep(0.05)
