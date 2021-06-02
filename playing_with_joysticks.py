@@ -41,6 +41,7 @@ else:
 	my_joystick = pygame.joystick.Joystick(0)
 	my_joystick.init()
 
+print_ary = []
 should_stop = False
 while not should_stop:
     for event in pygame.event.get():
@@ -50,6 +51,13 @@ while not should_stop:
             if event.key == pygame.K_ESCAPE:
                 should_stop = True
 
-    print("X_axis {} Y_axis {}".format(get_joystick_power(my_joystick, 2), get_joystick_power(my_joystick, 3) * -1))
+    print_ary.append(("left_X_axis {} left_Y_axis {} right_X_axis {} right_Y_axis {}".format(get_joystick_power(my_joystick, 0), 
+                                                                                 get_joystick_power(my_joystick, 1) * -1, 
+                                                                                 get_joystick_power(my_joystick, 2), 
+                                                                                 get_joystick_power(my_joystick, 3) * -1)))
+
+    print(print_ary)
+
+    print_ary.pop(0)
 
     time.sleep(0.05)
