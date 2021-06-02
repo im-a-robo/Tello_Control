@@ -3,13 +3,13 @@ import cv2
 import pygame
 import numpy as np
 import time
+import sys
 
 # Speed of the drone
-S = 60
+S = 120
 # Frames per second of the pygame window display
 # A low number also results in input lag, as input information is processed once per frame.
-FPS = 120
-
+FPS = 60
 
 class FrontEnd(object):
     """ Maintains the Tello display and moves it through the keyboard keys.
@@ -25,6 +25,16 @@ class FrontEnd(object):
     def __init__(self):
         # Init pygame
         pygame.init()
+
+        joystick_count=pygame.joystick.get_count()
+        if joystick_count == 0:
+        	# No joysticks!
+            print ("Error, I didn't find any joysticks.")
+            sys.exit()
+        else:
+        	# Use joystick #0 and initialize it
+        	my_joystick = pygame.joystick.Joystick(0)
+        	my_joystick.init()
 
         # Creat pygame window
         pygame.display.set_caption("Tello video stream")
@@ -64,9 +74,11 @@ class FrontEnd(object):
                     self.update()
                 elif event.type == pygame.QUIT:
                     should_stop = True
+                    sys.exit(0)
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         should_stop = True
+                        pygame.quit()
                     else:
                         self.keydown(event.key)
                 elif event.type == pygame.KEYUP:
@@ -141,7 +153,8 @@ class FrontEnd(object):
             self.tello.takeoff()
             self.send_rc_control = True
         elif key == pygame.K_l:  # land
-            not self.tello.land()
+            #not self.tello.land()
+            self.tello.land()
             self.send_rc_control = False
 
     def update(self):
