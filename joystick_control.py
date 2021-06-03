@@ -33,8 +33,8 @@ class FrontEnd(object):
             sys.exit()
         else:
         	# Use joystick #0 and initialize it
-        	my_joystick = pygame.joystick.Joystick(0)
-        	my_joystick.init()
+        	self.my_joystick = pygame.joystick.Joystick(0)
+        	self.my_joystick.init()
 
         # Creat pygame window
         pygame.display.set_caption("Tello video stream")
@@ -51,6 +51,7 @@ class FrontEnd(object):
         self.speed = 10
 
         self.send_rc_control = False
+        self.deadzone = 15
 
         # create update timer
         pygame.time.set_timer(pygame.USEREVENT + 1, 1000 // FPS)
@@ -84,6 +85,13 @@ class FrontEnd(object):
                 elif event.type == pygame.KEYUP:
                     self.keyup(event.key)
 
+            self.for_back_velocity = (self.get_joystick_power(self.my_joystick, 1) * -1)
+            self.left_right_velocity = (self.get_joystick_power(self.my_joystick, 0))
+
+            self.up_down_velocity = (self.get_joystick_power(self.my_joystick, 3) * -1)
+            self.yaw_velocity = (self.get_joystick_power(self.my_joystick, 2))
+
+
             if frame_read.stopped:
                 break
 
@@ -111,23 +119,7 @@ class FrontEnd(object):
         Arguments:
             key: pygame key
         """
-        if key == pygame.K_UP:  # set forward velocity
-            self.for_back_velocity = S
-        elif key == pygame.K_DOWN:  # set backward velocity
-            self.for_back_velocity = -S
-        elif key == pygame.K_LEFT:  # set left velocity
-            self.left_right_velocity = -S
-        elif key == pygame.K_RIGHT:  # set right velocity
-            self.left_right_velocity = S
-        elif key == pygame.K_w:  # set up velocity
-            self.up_down_velocity = S
-        elif key == pygame.K_s:  # set down velocity
-            self.up_down_velocity = -S
-        elif key == pygame.K_a:  # set yaw counter clockwise velocity
-            self.yaw_velocity = -S
-        elif key == pygame.K_d:  # set yaw clockwise velocity
-            self.yaw_velocity = S
-        elif key == pygame.K_1:  # land
+        if key == pygame.K_1:  # land
             self.send_rc_control = False
             self.auton1()
             self.send_rc_control = True
@@ -141,21 +133,21 @@ class FrontEnd(object):
         Arguments:
             key: pygame key
         """
-        if key == pygame.K_UP or key == pygame.K_DOWN:  # set zero forward/backward velocity
-            self.for_back_velocity = 0
-        elif key == pygame.K_LEFT or key == pygame.K_RIGHT:  # set zero left/right velocity
-            self.left_right_velocity = 0
-        elif key == pygame.K_w or key == pygame.K_s:  # set zero up/down velocity
-            self.up_down_velocity = 0
-        elif key == pygame.K_a or key == pygame.K_d:  # set zero yaw velocity
-            self.yaw_velocity = 0
-        elif key == pygame.K_t:  # takeoff
+        if key == pygame.K_t:  # takeoff
             self.tello.takeoff()
             self.send_rc_control = True
         elif key == pygame.K_l:  # land
             #not self.tello.land()
             self.tello.land()
             self.send_rc_control = False
+
+    def get_joystick_power(self, joystick, axis):
+        if abs(np.round((joystick.get_axis(axis) * S), 0)) < self.deadzone:
+            power = 0
+        else:
+            power = np.round((joystick.get_axis(axis) * S), 0)
+
+        return power
 
     def update(self):
         """ Update routine. Send velocities to Tello."""
