@@ -65,6 +65,9 @@ class FrontEnd(object):
         self.tello.streamon()
 
         frame_read = self.tello.get_frame_read()
+        face_cascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
+
+        self.face_detection_mode = False
 
         should_stop = False
         while not should_stop:
@@ -74,17 +77,20 @@ class FrontEnd(object):
                     self.update()
                 elif event.type == pygame.QUIT:
                     should_stop = True
+                    cv2.destroyAllWindows()
                     sys.exit(0)
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         should_stop = True
                         pygame.quit()
+                        cv2.destroyAllWindows()
                     else:
                         self.keydown(event.key)
                 elif event.type == pygame.KEYUP:
                     self.keyup(event.key)
 
             if frame_read.stopped:
+                cv2.destroyAllWindows()
                 break
 
             self.screen.fill([0, 0, 0])
@@ -94,12 +100,18 @@ class FrontEnd(object):
             cv2.putText(frame, text, (5, 720 - 5),
                 cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            frame = np.rot90(frame)
-            frame = np.flipud(frame)
+            #TODO test if needed
+            #frame = np.rot90(frame)
+            #frame = np.flipud(frame)
 
-            frame = pygame.surfarray.make_surface(frame)
-            self.screen.blit(frame, (0, 0))
-            pygame.display.update()
+            if self.face_detection_mode == True:
+                self.face_detection(frame, face_cascade)
+
+            cv2.imshow(frame)
+            #TODO check if needed
+            #frame = pygame.surfarray.make_surface(frame)
+            #self.screen.blit(frame, (0, 0))
+            #pygame.display.update()
 
             time.sleep(1 / FPS)
 
@@ -163,6 +175,16 @@ class FrontEnd(object):
             self.tello.send_rc_control(self.left_right_velocity, self.for_back_velocity,
                 self.up_down_velocity, self.yaw_velocity)
     
+    def face_detection(self, frame, face_cascade):
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            faces = face_cascade.detectMultiScale(gray, 1.1, 4)
+        
+            if type(faces) != tuple:
+                for (x, y, w, h) in faces:
+                    cv2.rectangle(frame, (x,y), (x+w, y+h), (255, 0, 0), 3)
+            else:
+                print('no face detected')
+
     def auton1(self):
         self.tello.move_forward(30)
         time.sleep(0.15)

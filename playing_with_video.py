@@ -5,7 +5,7 @@ import sys
 import numpy as np
 from time import sleep
 
-fps = 30
+fps = 15
 
 def color_masking():
     # define a video capture object
@@ -99,7 +99,7 @@ def face_detection_all():
         if type(faces) != tuple:
             for (x, y, w, h) in faces:
                 cv2.rectangle(frame, (x,y), (x+w, y+h), (255, 0, 0), 3)
-            print(faces)
+            print(location_bool)
         else:
             print('no face detected')
 
@@ -149,7 +149,7 @@ def face_detection_one():
             w = one_faces[2]
             h = one_faces[3]
             cv2.rectangle(frame, (x,y), (x+w, y+h), (255, 0, 0), 3)
-            print(faces[0])
+            print(location_bool)
         else:
             print('no face detected')
 
@@ -157,7 +157,7 @@ def face_detection_one():
         cv2.imshow('frame', frame)
 
 
-        if (y > 250 and y != 0) and (x > 250 and x != 0):
+        if (y > 150 and y != 0) and (x > 150 and x != 0):
             location_bool = True
         else:
             location_bool = False
@@ -166,10 +166,9 @@ def face_detection_one():
         if cv2.waitKey(1) == 27:
             break
 
-
     # After the loop release the cap object
     vid.release()
     # Destroy all the windows
     cv2.destroyAllWindows()
 
-face_detection_one()
+face_detection_all()
