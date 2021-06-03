@@ -69,6 +69,7 @@ class FrontEnd(object):
         face_cascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
 
         self.face_detection_mode = False
+        self.face_location = (0, 0)
 
         should_stop = False
         while not should_stop:
@@ -171,6 +172,7 @@ class FrontEnd(object):
             if type(faces) != tuple:
                 for (x, y, w, h) in faces:
                     cv2.rectangle(frame, (x,y), (x+w, y+h), (255, 0, 0), 3)
+                self.face_location = (x, y)
             else:
                 print('no face detected')
 
