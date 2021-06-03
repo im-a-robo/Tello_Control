@@ -1,3 +1,4 @@
+from cv2 import data
 import pygame
 import cv2
 import sys
@@ -75,7 +76,8 @@ def color_masking():
     elif move_on == "n":
         print("ok then")
 
-def face_detection():  
+
+def face_detection_all():  
     x, y, w, h = 0, 0, 0, 0
 
     location_bool = False
@@ -94,8 +96,12 @@ def face_detection():
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         faces = face_cascade.detectMultiScale(gray, 1.1, 4)
 
-        for (x, y, w, h) in faces:
-            cv2.rectangle(frame, (x,y), (x+w, y+h), (255, 0, 0), 3)
+        if type(faces) != tuple:
+            for (x, y, w, h) in faces:
+                cv2.rectangle(frame, (x,y), (x+w, y+h), (255, 0, 0), 3)
+            print(faces)
+        else:
+            print('no face detected')
 
         # Display the resulting frame
         cv2.imshow('frame', frame)
@@ -110,7 +116,55 @@ def face_detection():
         if cv2.waitKey(1) == 27:
             break
 
-        print(location_bool)
+
+    # After the loop release the cap object
+    vid.release()
+    # Destroy all the windows
+    cv2.destroyAllWindows()
+
+
+def face_detection_one():  
+    x, y, w, h = 0, 0, 0, 0
+
+    location_bool = False
+
+    # define a video capture object
+    face_cascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
+    vid = cv2.VideoCapture(0)
+
+    while(True):
+
+        sleep(1 / fps)
+
+        # Capture the video frame
+        # by frame
+        ret, frame = vid.read()
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        faces = face_cascade.detectMultiScale(gray, 1.1, 4)
+
+        if type(faces) != tuple:
+            one_faces = faces[0]
+            x = one_faces[0]
+            y = one_faces[1]
+            w = one_faces[2]
+            h = one_faces[3]
+            cv2.rectangle(frame, (x,y), (x+w, y+h), (255, 0, 0), 3)
+            print(faces[0])
+        else:
+            print('no face detected')
+
+        # Display the resulting frame
+        cv2.imshow('frame', frame)
+
+
+        if (y > 250 and y != 0) and (x > 250 and x != 0):
+            location_bool = True
+        else:
+            location_bool = False
+
+        # if escape is pressed break the loop
+        if cv2.waitKey(1) == 27:
+            break
 
 
     # After the loop release the cap object
@@ -118,4 +172,4 @@ def face_detection():
     # Destroy all the windows
     cv2.destroyAllWindows()
 
-face_detection()
+face_detection_one()
