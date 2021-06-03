@@ -2,6 +2,9 @@ import pygame
 import cv2
 import sys
 import numpy as np
+from time import sleep
+
+fps = 30
 
 def color_masking():
     # define a video capture object
@@ -30,6 +33,7 @@ def color_masking():
     cv2.createTrackbar("U-V", "Trackbars", int(u_v), 255, nothing)
 
     while(True):
+        sleep(1 / fps)
 
         # Capture the video frame
         # by frame
@@ -71,5 +75,47 @@ def color_masking():
     elif move_on == "n":
         print("ok then")
 
+def face_detection():  
+    x, y, w, h = 0, 0, 0, 0
 
-color_masking()
+    location_bool = False
+
+    # define a video capture object
+    face_cascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
+    vid = cv2.VideoCapture(0)
+
+    while(True):
+
+        sleep(1 / fps)
+
+        # Capture the video frame
+        # by frame
+        ret, frame = vid.read()
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        faces = face_cascade.detectMultiScale(gray, 1.1, 4)
+
+        for (x, y, w, h) in faces:
+            cv2.rectangle(frame, (x,y), (x+w, y+h), (255, 0, 0), 3)
+
+        # Display the resulting frame
+        cv2.imshow('frame', frame)
+
+
+        if (y > 250 and y != 0) and (x > 250 and x != 0):
+            location_bool = True
+        else:
+            location_bool = False
+
+        # if escape is pressed break the loop
+        if cv2.waitKey(1) == 27:
+            break
+
+        print(location_bool)
+
+
+    # After the loop release the cap object
+    vid.release()
+    # Destroy all the windows
+    cv2.destroyAllWindows()
+
+face_detection()
