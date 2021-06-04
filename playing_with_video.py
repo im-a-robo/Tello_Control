@@ -101,8 +101,9 @@ def face_detection_all():
         if type(faces) != tuple:
             for (x, y, w, h) in faces:
                 cv2.rectangle(frame, (x,y), (x+w, y+h), (255, 0, 0), 3)
+                distance = (2 * 3.14 * 180) / (w + h * 360) * 1000 + 3
             face_location = (x, y)
-            print(face_location)
+            print(face_location, round(distance, 0))
         else:
             print('no face detected')
 

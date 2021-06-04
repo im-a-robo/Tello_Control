@@ -70,6 +70,7 @@ class FrontEnd(object):
 
         self.face_detection_mode = False
         self.face_location = (0, 0)
+        self.distance = 0
 
         should_stop = False
         while not should_stop:
@@ -102,9 +103,14 @@ class FrontEnd(object):
             self.screen.fill([0, 0, 0])
 
             frame = frame_read.frame
-            text = "Battery: {}%".format(self.tello.get_battery())
-            cv2.putText(frame, text, (5, 720 - 5),
+            text_battery = "Battery: {}%".format(self.tello.get_battery())
+            text_face_location_distance = "location {} distance {}".format(str(self.face_location), str(self.distance))
+            
+            cv2.putText(frame, text_battery, (5, 720 - 5),
                 cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+            cv2.putText(frame, text_face_location_distance, (5, 720 - 25),
+                cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             #TODO test if needed
             #frame = np.rot90(frame)
@@ -172,6 +178,7 @@ class FrontEnd(object):
             if type(faces) != tuple:
                 for (x, y, w, h) in faces:
                     cv2.rectangle(frame, (x,y), (x+w, y+h), (255, 0, 0), 3)
+                self.distance = (2 * 3.14 * 180) / (w + h * 360) * 1000 + 3 # in inches
                 self.face_location = (x, y)
             else:
                 print('no face detected')
