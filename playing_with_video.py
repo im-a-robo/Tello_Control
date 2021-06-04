@@ -2,6 +2,7 @@ from cv2 import data
 import pygame
 import cv2
 import sys
+import os
 import numpy as np
 from time import sleep
 
@@ -82,36 +83,47 @@ def face_detection_all():
 
     location_bool = False
 
+    screen = pygame.display.set_mode([960, 720])
+
     # define a video capture object
     face_cascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
     vid = cv2.VideoCapture(0)
 
-    while(True):
+    should_stop = False
+    while not should_stop:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                should_stop = True
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    should_stop = True
 
         sleep(1 / fps)
 
         # Capture the video frame
         # by frame
         ret, frame = vid.read()
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         faces = face_cascade.detectMultiScale(gray, 1.1, 4)
-
-        face_location = (0, 0)
 
         if type(faces) != tuple:
             for (x, y, w, h) in faces:
                 cv2.rectangle(frame, (x,y), (x+w, y+h), (255, 0, 0), 3)
-                distance = (2 * 3.14 * 180) / (w + h * 360) * 1000 + 5
-            face_location = (x, y)
-            print(face_location, round(distance, 0))
+            print(location_bool)
         else:
             print('no face detected')
 
         # Display the resulting frame
         cv2.imshow('frame', frame)
+        cv2.imshow('gray', gray)
+        #display_surface = np.rot90(frame)
+        #display_surface = np.flipud(display_surface)
+        #display_surface = pygame.surfarray.make_surface(display_surface)
+        #screen.blit(display_surface, (0,0))
 
 
-        if (y > 250 and y != 0) and (x > 250 and x != 0):
+        if (y > 150 and y != 0) and (x > 150 and x != 0):
             location_bool = True
         else:
             location_bool = False
@@ -119,6 +131,8 @@ def face_detection_all():
         # if escape is pressed break the loop
         if cv2.waitKey(1) == 27:
             break
+        
+        pygame.display.update()
 
 
     # After the loop release the cap object
@@ -132,6 +146,8 @@ def face_detection_one():
 
     location_bool = False
 
+    screen = pygame.display.set_mode([960, 720])
+
     # define a video capture object
     face_cascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
     vid = cv2.VideoCapture(0)
@@ -143,6 +159,7 @@ def face_detection_one():
         # Capture the video frame
         # by frame
         ret, frame = vid.read()
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         faces = face_cascade.detectMultiScale(gray, 1.1, 4)
 
@@ -158,7 +175,11 @@ def face_detection_one():
             print('no face detected')
 
         # Display the resulting frame
-        cv2.imshow('frame', frame)
+        #cv2.imshow('frame', frame)
+        display_surface = np.rot90(frame)
+        display_surface = np.flipud(display_surface)
+        display_surface = pygame.surfarray.make_surface(display_surface)
+        screen.blit(display_surface, (0,0))
 
 
         if (y > 150 and y != 0) and (x > 150 and x != 0):
@@ -169,7 +190,46 @@ def face_detection_one():
         # if escape is pressed break the loop
         if cv2.waitKey(1) == 27:
             break
+        
+        pygame.display.update()
 
+
+    # After the loop release the cap object
+    vid.release()
+    # Destroy all the windows
+    cv2.destroyAllWindows()
+
+def picture_taker():
+    vid = cv2.VideoCapture(0)
+    img_count = 1
+
+    joystick_count=pygame.joystick.get_count()
+    if joystick_count == 0:
+    	# No joysticks!
+        print ("Error, I didn't find any joysticks.")
+    else:
+    	# Use joystick #0 and initialize it
+    	my_joystick = pygame.joystick.Joystick(0)
+    	my_joystick.init()
+
+    os.chdir('C:/Users/Ndas1/Code/Tello_Control/pictures/n')
+    while(True):
+
+        sleep(1 / fps)
+
+        # Capture the video frame
+        # by frame
+        ret, frame = vid.read()
+
+        cv2.imshow("frame", frame)
+        if my_joystick.get_button(0) == 1:
+            cv2.imwrite("facepic{}.png".format(str(img_count)), frame)
+            print(img_count)
+            img_count += 1
+
+        # if escape is pressed break the loop
+        if cv2.waitKey(1) == 27:
+            break
     # After the loop release the cap object
     vid.release()
     # Destroy all the windows

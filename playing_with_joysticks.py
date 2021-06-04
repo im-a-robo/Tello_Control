@@ -55,6 +55,8 @@ else:
 	my_joystick = pygame.joystick.Joystick(0)
 	my_joystick.init()
 
+screen = pygame.display.set_mode([960, 720])
+
 should_stop = False
 while not should_stop:
     for event in pygame.event.get():
@@ -63,6 +65,8 @@ while not should_stop:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 should_stop = True
+
+    screen.fill([0,0,0])
 
     print(("left_X_axis {} left_Y_axis {} right_X_axis {} right_Y_axis {}".format(get_joystick_power(my_joystick, 0), 
                                                                                  get_joystick_power(my_joystick, 1) * -1, 
@@ -86,5 +90,7 @@ while not should_stop:
     #                                                                                                                                                                                                                   get_joystick_button_state(my_joystick, 13),
     #                                                                                                                                                                                                                   get_joystick_button_state(my_joystick, 14),
     #                                                                                                                                                                                                                   get_joystick_button_state(my_joystick, 15)))
+
+    pygame.display.update()
 
     time.sleep(0.05)

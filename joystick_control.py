@@ -2,6 +2,7 @@ from djitellopy import Tello
 import cv2
 import pygame
 import numpy as np
+import pygame
 import time
 import sys
 
@@ -102,30 +103,25 @@ class FrontEnd(object):
 
             self.screen.fill([0, 0, 0])
 
-            frame = frame_read.frame
+            raw_frame = frame_read.frame
+            if self.face_detection_mode == True:
+                self.face_detection(raw_frame, face_cascade)
+
+            display_frame = cv2.cvtColor(raw_frame, cv2.COLOR_BGR2RGB)
+            
+            cv2.putText(display_frame, text_battery, (5, 720 - 5),
+                cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+            cv2.putText(display_frame, text_face_location_distance, (5, 720 - 30),
+                cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+
+            display_frame = np.rot90(display_frame)
+            display_frame = np.flipud(display_frame)
+
             text_battery = "Battery: {}%".format(self.tello.get_battery())
             text_face_location_distance = "location {} distance {}".format(str(self.face_location), str(self.distance))
-            
-            cv2.putText(frame, text_battery, (5, 720 - 5),
-                cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
-            cv2.putText(frame, text_face_location_distance, (5, 720 - 25),
-                cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
 
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            #TODO test if needed
-            #frame = np.rot90(frame)
-            #frame = np.flipud(frame)
-
-            if self.face_detection_mode == True:
-                self.face_detection(frame, face_cascade)
-                if self.distance > 36:
-                    self.for_back_velocity = S
-                else:
-                    self.for_back_velocity = 0
-
-
-            frame = pygame.surfarray.make_surface(frame)
-            self.screen.blit(frame, (0, 0))
+            display_frame = pygame.surfarray.make_surface(display_frame)
+            self.screen.blit(display_frame, (0, 0))
             pygame.display.update()
 
             time.sleep(1 / FPS)
