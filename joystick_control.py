@@ -1,6 +1,6 @@
 from djitellopy import Tello
 import cv2
-import pygame
+import joystick as jk
 import numpy as np
 import time
 import sys
@@ -37,8 +37,8 @@ class FrontEnd(object):
         	self.my_joystick.init()
 
         # Creat pygame window
-        pygame.display.set_caption("Tello video stream")
-        self.screen = pygame.display.set_mode([960, 720])
+        # pygame.display.set_caption("Tello video stream")
+        #self.screen = pygame.display.set_mode([960, 720])
 
         # Init Tello object that interacts with the Tello drone
         self.tello = Tello()
@@ -100,28 +100,32 @@ class FrontEnd(object):
             if frame_read.stopped:
                 break
 
-            self.screen.fill([0, 0, 0])
+            #self.screen.fill([0, 0, 0])
 
-            frame = frame_read.frame
+            raw_frame = frame_read.frame
+            # raw_frame = np.rot90(raw_frame)
+            # raw_frame = np.flipud(raw_frame)
+
             text_battery = "Battery: {}%".format(self.tello.get_battery())
             text_face_location_distance = "location {} distance {}".format(str(self.face_location), str(self.distance))
             
+            # Display Frame
+            frame = cv2.cvtColor(raw_frame, cv2.COLOR_BGR2RGB)
+
             cv2.putText(frame, text_battery, (5, 720 - 5),
                 cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
             cv2.putText(frame, text_face_location_distance, (5, 720 - 25),
                 cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
 
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            #TODO test if needed
-            #frame = np.rot90(frame)
-            #frame = np.flipud(frame)
-
+            # Face Frame
             if self.face_detection_mode == True:
                 self.face_detection(frame, face_cascade)
 
-            frame = pygame.surfarray.make_surface(frame)
-            self.screen.blit(frame, (0, 0))
-            pygame.display.update()
+
+            cv2.imshow('title', frame)
+            # frame = pygame.surfarray.make_surface(frame)
+            # self.screen.blit(frame, (0, 0))
+            # pygame.display.update()
 
             time.sleep(1 / FPS)
 
@@ -168,12 +172,11 @@ class FrontEnd(object):
     def update(self):
         """ Update routine. Send velocities to Tello."""
         if self.send_rc_control:
-            self.tello.send_rc_control(self.left_right_velocity, self.for_back_velocity,
-                self.up_down_velocity, self.yaw_velocity)
+            self.tello.send_rc_control(int(self.left_right_velocity), int(self.for_back_velocity), int(self.up_down_velocity), int(self.yaw_velocity))
     
     def face_detection(self, frame, face_cascade):
-            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            faces = face_cascade.detectMultiScale(gray, 1.1, 4)
+            frame = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
+            faces = face_cascade.detectMultiScale(frame, 1.1, 4)
         
             if type(faces) != tuple:
                 for (x, y, w, h) in faces:
