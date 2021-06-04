@@ -4,8 +4,10 @@ import cv2
 import sys
 import numpy as np
 from time import sleep
+import os
 
-fps = 15
+fps = 5
+pygame.init()
 
 def color_masking():
     # define a video capture object
@@ -185,4 +187,40 @@ def face_detection_one():
     # Destroy all the windows
     cv2.destroyAllWindows()
 
-face_detection_all()
+def picture_taker():
+    vid = cv2.VideoCapture(0)
+    img_count = 1
+
+    joystick_count=pygame.joystick.get_count()
+    if joystick_count == 0:
+    	# No joysticks!
+        print ("Error, I didn't find any joysticks.")
+    else:
+    	# Use joystick #0 and initialize it
+    	my_joystick = pygame.joystick.Joystick(0)
+    	my_joystick.init()
+
+    os.chdir('C:/Users/Ndas1/Code/Tello_Control/pictures/n')
+    while(True):
+
+        sleep(1 / fps)
+
+        # Capture the video frame
+        # by frame
+        ret, frame = vid.read()
+
+        cv2.imshow("frame", frame)
+        if my_joystick.get_button(0) == 1:
+            cv2.imwrite("facepic{}.png".format(str(img_count)), frame)
+            print(img_count)
+            img_count += 1
+
+        # if escape is pressed break the loop
+        if cv2.waitKey(1) == 27:
+            break
+    # After the loop release the cap object
+    vid.release()
+    # Destroy all the windows
+    cv2.destroyAllWindows()
+
+picture_taker()
