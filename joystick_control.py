@@ -27,7 +27,7 @@ class FrontEnd(object):
         # Init pygame
         pygame.init()
 
-        joystick_count=pygame.joystick.get_count()
+        joystick_count = pygame.joystick.get_count()
         if joystick_count == 0:
         	# No joysticks!
             print ("Error, I didn't find any joysticks.")
