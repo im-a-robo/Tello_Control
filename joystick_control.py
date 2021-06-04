@@ -102,8 +102,8 @@ class FrontEnd(object):
             cv2.putText(frame, text, (5, 720 - 5),
                 cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            frame = np.rot90(frame)
-            frame = np.flipud(frame)
+            #frame = np.rot90(frame)
+            #frame = np.flipud(frame)
 
             frame = pygame.surfarray.make_surface(frame)
             self.screen.blit(frame, (0, 0))
@@ -152,8 +152,7 @@ class FrontEnd(object):
     def update(self):
         """ Update routine. Send velocities to Tello."""
         if self.send_rc_control:
-            self.tello.send_rc_control(self.left_right_velocity, self.for_back_velocity,
-                self.up_down_velocity, self.yaw_velocity)
+            self.tello.send_rc_control(int(self.left_right_velocity), int(self.for_back_velocity), int(self.up_down_velocity), int(self.yaw_velocity))
     
     def auton1(self):
         self.tello.move_forward(30)

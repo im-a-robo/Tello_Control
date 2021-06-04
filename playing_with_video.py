@@ -93,6 +93,7 @@ def face_detection_all():
         # Capture the video frame
         # by frame
         ret, frame = vid.read()
+        #frame = np.fliplr(frame)
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         faces = face_cascade.detectMultiScale(gray, 1.1, 4)
 
@@ -172,4 +173,4 @@ def face_detection_one():
     # Destroy all the windows
     cv2.destroyAllWindows()
 
-face_detection_one()
+face_detection_all()
