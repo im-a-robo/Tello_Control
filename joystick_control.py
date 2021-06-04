@@ -104,11 +104,14 @@ class FrontEnd(object):
             self.screen.fill([0, 0, 0])
 
             raw_frame = frame_read.frame
+
             if self.face_detection_mode == True:
                 self.face_detection(raw_frame, face_cascade)
 
             display_frame = cv2.cvtColor(raw_frame, cv2.COLOR_BGR2RGB)
-            
+
+            text_battery = "Battery: {}%".format(self.tello.get_battery())
+            text_face_location_distance = "location {} distance {}".format(str(self.face_location), str(self.distance))
             cv2.putText(display_frame, text_battery, (5, 720 - 5),
                 cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
             cv2.putText(display_frame, text_face_location_distance, (5, 720 - 30),
@@ -116,9 +119,6 @@ class FrontEnd(object):
 
             display_frame = np.rot90(display_frame)
             display_frame = np.flipud(display_frame)
-
-            text_battery = "Battery: {}%".format(self.tello.get_battery())
-            text_face_location_distance = "location {} distance {}".format(str(self.face_location), str(self.distance))
 
             display_frame = pygame.surfarray.make_surface(display_frame)
             self.screen.blit(display_frame, (0, 0))
@@ -173,7 +173,7 @@ class FrontEnd(object):
                 self.up_down_velocity, self.yaw_velocity)
     
     def face_detection(self, frame, face_cascade):
-            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            gray = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
             faces = face_cascade.detectMultiScale(gray, 1.1, 4)
         
             if type(faces) != tuple:

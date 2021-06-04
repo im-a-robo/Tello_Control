@@ -106,7 +106,8 @@ def face_detection_all():
         # by frame
         ret, frame = vid.read()
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        cv2.imshow('frame1', frame)
+        gray = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
         faces = face_cascade.detectMultiScale(gray, 1.1, 4)
 
         if type(faces) != tuple:
@@ -118,7 +119,7 @@ def face_detection_all():
             print('no face detected')
 
         # Display the resulting frame
-        cv2.imshow('frame', frame)
+        cv2.imshow('frame2', frame)
         cv2.imshow('gray', gray)
         display_surface = np.rot90(frame)
         display_surface = np.flipud(display_surface)
