@@ -118,6 +118,11 @@ class FrontEnd(object):
 
             if self.face_detection_mode == True:
                 self.face_detection(frame, face_cascade)
+                if self.distance > 36:
+                    self.for_back_velocity = S
+                else:
+                    self.for_back_velocity = 0
+
 
             frame = pygame.surfarray.make_surface(frame)
             self.screen.blit(frame, (0, 0))
@@ -178,7 +183,7 @@ class FrontEnd(object):
             if type(faces) != tuple:
                 for (x, y, w, h) in faces:
                     cv2.rectangle(frame, (x,y), (x+w, y+h), (255, 0, 0), 3)
-                self.distance = (2 * 3.14 * 180) / (w + h * 360) * 1000 + 3 # in inches
+                self.distance = (2 * 3.14 * 180) / (w + h * 360) * 1000 + 5 # in inches
                 self.face_location = (x, y)
             else:
                 print('no face detected')
