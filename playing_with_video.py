@@ -96,16 +96,26 @@ def face_detection_all():
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         faces = face_cascade.detectMultiScale(gray, 1.1, 4)
 
+        text_location = ''
+        text_distance = ''
+
         face_location = (0, 0)
 
         if type(faces) != tuple:
             for (x, y, w, h) in faces:
                 cv2.rectangle(frame, (x,y), (x+w, y+h), (255, 0, 0), 3)
-                distance = (2 * 3.14 * 180) / (w + h * 360) * 1000 + 3
+                distance = (2 * 3.14 * 180) / (w + h * 360) * 1000 + 5
             face_location = (x, y)
-            print(face_location, round(distance, 0))
+            text_location = "location {}".format(str(face_location))
+            text_distance = "distance {}".format(str(round(distance, 0)))
         else:
             print('no face detected')
+
+        if text_distance != '' and text_location != '': 
+            cv2.putText(frame, text_location, (5, 150),
+                cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+            cv2.putText(frame, text_distance, (5, 250),
+                cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
 
         # Display the resulting frame
         cv2.imshow('frame', frame)

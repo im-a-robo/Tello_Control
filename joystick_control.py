@@ -178,7 +178,7 @@ class FrontEnd(object):
             if type(faces) != tuple:
                 for (x, y, w, h) in faces:
                     cv2.rectangle(frame, (x,y), (x+w, y+h), (255, 0, 0), 3)
-                self.distance = (2 * 3.14 * 180) / (w + h * 360) * 1000 + 3 # in inches
+                self.distance = (2 * 3.14 * 180) / (w + h * 360) * 1000 + 5 # in inches
                 self.face_location = (x, y)
             else:
                 print('no face detected')
