@@ -213,7 +213,7 @@ def picture_taker():
     	my_joystick = pygame.joystick.Joystick(0)
     	my_joystick.init()
 
-    os.chdir('G:/Code/Tello_Control/pictures/n')
+    os.chdir('C:/Users/Ndas1/Code/Tello_Control/pictures/n')
 
     should_stop = False
     while not should_stop:

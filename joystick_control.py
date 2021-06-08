@@ -72,6 +72,8 @@ class FrontEnd(object):
         self.face_detection_mode = False
         self.face_location = (0, 0)
         self.distance = 0
+        self.face_located = True
+        self.moveing_distance = 0
 
         should_stop = False
         while not should_stop:
@@ -91,12 +93,30 @@ class FrontEnd(object):
                 elif event.type == pygame.KEYUP:
                     self.keyup(event.key)
 
-            self.for_back_velocity = (self.get_joystick_power(self.my_joystick, 1) * -1)
-            self.left_right_velocity = (self.get_joystick_power(self.my_joystick, 0))
+            if not self.face_detection_mode:
+                self.for_back_velocity = (self.get_joystick_power(self.my_joystick, 1) * -1)
+                self.left_right_velocity = (self.get_joystick_power(self.my_joystick, 0))
 
-            self.up_down_velocity = (self.get_joystick_power(self.my_joystick, 3) * -1)
-            self.yaw_velocity = (self.get_joystick_power(self.my_joystick, 2))
+                self.up_down_velocity = (self.get_joystick_power(self.my_joystick, 3) * -1)
+                self.yaw_velocity = (self.get_joystick_power(self.my_joystick, 2))
 
+            if self.face_located and self.face_detection_mode:
+                if self.face_location[0] < 360:
+                    self.yaw_velocity = -(S / 4)
+                elif self.face_location[0] > 600:
+                    self.yaw_velocity = (S / 4)
+                elif self.face_location[0] > 360 and self.face_location[0] < 600:
+                    self.yaw_velocity = 0
+                    if self.distance > 30:
+                        self.difference = float(self.distance - 30)
+                        self.moveing_distance = int(round(self.difference * 2.54, 0))
+                        self.tello.move_forward(self.moveing_distance)
+                    else:
+                        self.for_back_velocity = 0
+            elif not self.face_located:
+                self.moveing_distance = 0
+            
+            print(self.moveing_distance)
 
             if frame_read.stopped:
                 break
@@ -169,8 +189,8 @@ class FrontEnd(object):
     def update(self):
         """ Update routine. Send velocities to Tello."""
         if self.send_rc_control:
-            self.tello.send_rc_control(self.left_right_velocity, self.for_back_velocity,
-                self.up_down_velocity, self.yaw_velocity)
+            self.tello.send_rc_control(int(self.left_right_velocity), int(self.for_back_velocity),
+                int(self.up_down_velocity), int(self.yaw_velocity))
     
     def face_detection(self, frame, face_cascade):
             gray = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
@@ -178,11 +198,18 @@ class FrontEnd(object):
         
             if type(faces) != tuple:
                 for (x, y, w, h) in faces:
+                    one_face = faces[0]
+                    x = one_face[0]
+                    y = one_face[1]
+                    w = one_face[2]
+                    h = one_face[3]
                     cv2.rectangle(frame, (x,y), (x+w, y+h), (255, 0, 0), 3)
-                self.distance = (2 * 3.14 * 180) / (w + h * 360) * 1000 + 5 # in inches
+                self.distance = round(((2 * 3.14 * 180) / (w + h * 360) * 1000 + 5), 0) # in inches
                 self.face_location = (x, y)
+                self.face_located = True
             else:
                 print('no face detected')
+                self.face_located = False
 
     def auton1(self):
         self.tello.move_forward(30)
