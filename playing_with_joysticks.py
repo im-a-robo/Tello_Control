@@ -34,7 +34,7 @@ button Y = BTN_NORTH 1Key or BTN_NORTH 0 Key
 
 '''
 
-fps = 60
+fps = 240
 
 
 max_speed = 120
@@ -46,13 +46,13 @@ def scale_js(val):
     val = int((val - (-32767)) * outputRange / inputRange + (-100))
     return val if abs(val) > 30 else 0
 
+left_stickX_val = 0
+left_stickY_val = 0
+right_stickX_val = 0
+right_stickY_val = 0
+
 while 1:
     events = get_gamepad()
-    
-    left_stickX_val = 0
-    left_stickY_val = 0
-    right_stickX_val = 0
-    right_stickY_val = 0
 
     for event in events:
         if not event.ev_type == "Sync":
@@ -65,11 +65,4 @@ while 1:
                 if event.code == 'ABS_RX':
                     right_stickX_val = scale_js(int(event.state))
     
-    if left_stickX_val != 0:
-        print("left_stickX_val {}".format(left_stickX_val))
-    if left_stickY_val != 0:
-        print("left_stickY_val {}".format(left_stickY_val))
-    if right_stickX_val != 0:
-        print("right_stickX_val {}".format(right_stickX_val))
-    if right_stickY_val != 0:
-        print("right_stickY_val {}".format(right_stickY_val))
+        print("left_stickX_val {} left_stickY_val {} right_stickX_val {} right_stickY_val {}".format(left_stickX_val, left_stickY_val, right_stickX_val, right_stickY_val))

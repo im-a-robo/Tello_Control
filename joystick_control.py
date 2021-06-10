@@ -53,9 +53,10 @@ class FrontEnd(object):
         self.face_located = True
         self.moveing_distance = 0
 
-        events = get_gamepad()
-        should_stop = False
-        while not should_stop:
+        #TODO make function
+        self.should_stop = False
+        while not self.should_stop:
+            events = get_gamepad()
             for event in events:
                 if not event.ev_type == "Sync":
                         if event.code == 'ABS_Y':
@@ -66,6 +67,10 @@ class FrontEnd(object):
                             up_down_velocity = scale_js(int(event.state))
                         if event.code == 'ABS_RX':
                             yaw_velocity = scale_js(int(event.state))
+                        if event.code == 'BTN_TL' and event.state == 1:
+                            self.tello.flip_left()
+                        if event.code == 'BTN_TR' and event.state == 1:
+                            self.tello.flip_right()
                         if event.code == 'BTN_SELECT' and event.state == 1:
                             self.tello.takeoff()
                         if event.code == 'BTN_START' and event.state == 1:
@@ -73,6 +78,7 @@ class FrontEnd(object):
                         if event.code == 'BTN_NORTH' and event.code == 1:
                             self.face_detection_mode == True
 
+            #TODO make function
             if self.face_located and self.face_detection_mode:
                 if self.face_location[0] < 360:
                     self.yaw_velocity = -(S / 4)
