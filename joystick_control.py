@@ -1,8 +1,7 @@
 from djitellopy import Tello
 import cv2
-import pygame
 import numpy as np
-import pygame
+from inputs import get_gamepad
 import time
 import sys
 
@@ -24,23 +23,6 @@ class FrontEnd(object):
     """
 
     def __init__(self):
-        # Init pygame
-        pygame.init()
-
-        joystick_count = pygame.joystick.get_count()
-        if joystick_count == 0:
-        	# No joysticks!
-            print ("Error, I didn't find any joysticks.")
-            sys.exit()
-        else:
-        	# Use joystick #0 and initialize it
-        	self.my_joystick = pygame.joystick.Joystick(0)
-        	self.my_joystick.init()
-
-        # Creat pygame window
-        pygame.display.set_caption("Tello video stream")
-        self.screen = pygame.display.set_mode([960, 720])
-
         # Init Tello object that interacts with the Tello drone
         self.tello = Tello()
 
@@ -52,10 +34,6 @@ class FrontEnd(object):
         self.speed = 10
 
         self.send_rc_control = False
-        self.deadzone = 15
-
-        # create update timer
-        pygame.time.set_timer(pygame.USEREVENT + 1, 1000 // FPS)
 
     def run(self):
 
@@ -75,30 +53,25 @@ class FrontEnd(object):
         self.face_located = True
         self.moveing_distance = 0
 
+        events = get_gamepad()
         should_stop = False
         while not should_stop:
-
-            for event in pygame.event.get():
-                if event.type == pygame.USEREVENT + 1:
-                    self.update()
-                elif event.type == pygame.QUIT:
-                    should_stop = True
-                    sys.exit(0)
-                elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_ESCAPE:
-                        should_stop = True
-                        pygame.quit()
-                    else:
-                        self.keydown(event.key)
-                elif event.type == pygame.KEYUP:
-                    self.keyup(event.key)
-
-            if not self.face_detection_mode:
-                self.for_back_velocity = (self.get_joystick_power(self.my_joystick, 1) * -1)
-                self.left_right_velocity = (self.get_joystick_power(self.my_joystick, 0))
-
-                self.up_down_velocity = (self.get_joystick_power(self.my_joystick, 3) * -1)
-                self.yaw_velocity = (self.get_joystick_power(self.my_joystick, 2))
+            for event in events:
+                if not event.ev_type == "Sync":
+                        if event.code == 'ABS_Y':
+                            for_back_velocity = scale_js(int(event.state))
+                        if event.code == 'ABS_X':
+                            left_right_velocity = scale_js(int(event.state))
+                        if event.code == 'ABS_RY':
+                            up_down_velocity = scale_js(int(event.state))
+                        if event.code == 'ABS_RX':
+                            yaw_velocity = scale_js(int(event.state))
+                        if event.code == 'BTN_SELECT' and event.state == 1:
+                            self.tello.takeoff()
+                        if event.code == 'BTN_START' and event.state == 1:
+                            self.tello.land()
+                        if event.code == 'BTN_NORTH' and event.code == 1:
+                            self.face_detection_mode == True
 
             if self.face_located and self.face_detection_mode:
                 if self.face_location[0] < 360:
@@ -115,13 +88,9 @@ class FrontEnd(object):
                         self.for_back_velocity = 0
             elif not self.face_located:
                 self.moveing_distance = 0
-            
-            print(self.moveing_distance)
 
             if frame_read.stopped:
                 break
-
-            self.screen.fill([0, 0, 0])
 
             raw_frame = frame_read.frame
 
@@ -137,60 +106,22 @@ class FrontEnd(object):
             cv2.putText(display_frame, text_face_location_distance, (5, 720 - 30),
                 cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
 
-            display_frame = np.rot90(display_frame)
-            display_frame = np.flipud(display_frame)
+            cv2.imshow("Tello Display", display_frame)
 
-            display_frame = pygame.surfarray.make_surface(display_frame)
-            self.screen.blit(display_frame, (0, 0))
-            pygame.display.update()
+            if self.send_rc_control:
+                self.tello.send_rc_control(int(self.left_right_velocity), int(self.for_back_velocity),
+                    int(self.up_down_velocity), int(self.yaw_velocity))
 
             time.sleep(1 / FPS)
 
         # Call it always before finishing. To deallocate resources.
         self.tello.end()
 
-    def keydown(self, key):
-        """ Update velocities based on key pressed
-        Arguments:
-            key: pygame key
-        """
-        if key == pygame.K_1:  # land
-            self.send_rc_control = False
-            self.auton1()
-            self.send_rc_control = True
-        elif key == pygame.K_2:  # land
-            self.send_rc_control = False
-            self.auton2()
-            self.send_rc_control = True
-        elif key == pygame.K_f:
-            self.face_detection_mode = not self.face_detection_mode
-
-    def keyup(self, key):
-        """ Update velocities based on key released
-        Arguments:
-            key: pygame key
-        """
-        if key == pygame.K_t:  # takeoff
-            self.tello.takeoff()
-            self.send_rc_control = True
-        elif key == pygame.K_l:  # land
-            #not self.tello.land()
-            self.tello.land()
-            self.send_rc_control = False
-
-    def get_joystick_power(self, joystick, axis):
-        if abs(np.round((joystick.get_axis(axis) * S), 0)) < self.deadzone:
-            power = 0
-        else:
-            power = np.round((joystick.get_axis(axis) * S), 0)
-
-        return power
-
-    def update(self):
-        """ Update routine. Send velocities to Tello."""
-        if self.send_rc_control:
-            self.tello.send_rc_control(int(self.left_right_velocity), int(self.for_back_velocity),
-                int(self.up_down_velocity), int(self.yaw_velocity))
+    def scale_js(self, val):
+        inputRange = 32768 - (-32767)
+        outputRange = 100 - (-100)
+        val = int((val - (-32767)) * outputRange / inputRange + (-100))
+        return val if abs(val) > 30 else 0
     
     def face_detection(self, frame, face_cascade):
             gray = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)

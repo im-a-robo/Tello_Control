@@ -1,96 +1,75 @@
-from djitellopy import Tello
 import cv2
-import pygame
+from inputs import get_gamepad
 import numpy as np
 import time
 import sys
 
 '''
-bottom of stick = 1
-top of stick = -1
+left stick x = ABS_X
+left stick y = ABS_Y
+right stick x = ABS_RX
+right stick y = ABS_RY
 
-right of stick = 1
-left of stick = -1
+left bumber = BTN_TL 1 Key or BTN_TL 0 Key
+right bumber = BTN_TR 1 Key or BTN_TR0Key
 
-left stick x-axis = axis 0 
-left stick y-axis = axis 1
+left trigger = ABS_Z[0-255] Absolute
+right trigger = ABS_RZ[0-255] Absolute
 
-right stick x-axis = axis 2
-right stick y-axis = axis 3
+left stick button down = BTN_THUMBL 1 Key or BTN_THUMBL 0 Key
+right stick button down = BTN_THUMBR 1 Key or BTN_THUMBR 0 Key
 
-button0 =  
-button1 = 
-button2 = 
-button3 = 
-button4 = 
-button5 = 
-button6 = 
-button7 = 
-button8 = 
-button9 = 
+D-pad up = ABS_HAT0Y -1 Absolute or ABS_HAT0Y 0 Absolute
+D-pad down = ABS_HAT0Y 1 Absolute or ABS_HAT0Y 0 Absolute
+D-pad left = ABS_HAT0X -1 Absolute or ABS_HAT0X 0 Absolute
+D-pad right = ABS_HAT0X 1 Absolute ABS_HAT0X 0 Absolute
+
+start button = BTN_SELECT 1 Key or BTN_SELECT 0 Key
+select button = BTN_START 1 Key or BTN_START 0 Key
+ 
+button A = BTN_SOUTH 1Key or BTN_SOUTH 0 Key
+button B = BTN_EAST 1Key or BTN_EAST 0 Key
+button X = BTN_WEST 1Key or BTN_WEST 0 Key
+button Y = BTN_NORTH 1Key or BTN_NORTH 0 Key
+
 '''
 
-pygame.init()
+fps = 60
+
 
 max_speed = 120
 
-def get_joystick_power(joystick, axis):
-    global max_speed
-    if abs(np.round((joystick.get_axis(axis) * max_speed), 0)) < 15:
-        power = 0
-    else:
-        power = np.round((joystick.get_axis(axis) * max_speed), 0)
 
-    return power
+def scale_js(val):
+    inputRange = 32768 - (-32767)
+    outputRange = 100 - (-100)
+    val = int((val - (-32767)) * outputRange / inputRange + (-100))
+    return val if abs(val) > 30 else 0
 
-def get_joystick_button_state(joystick, button):
-    return joystick.get_button(button)
+while 1:
+    events = get_gamepad()
+    
+    left_stickX_val = 0
+    left_stickY_val = 0
+    right_stickX_val = 0
+    right_stickY_val = 0
 
-joystick_count=pygame.joystick.get_count()
-if joystick_count == 0:
-	# No joysticks!
-    print ("Error, I didn't find any joysticks.")
-else:
-	# Use joystick #0 and initialize it
-	my_joystick = pygame.joystick.Joystick(0)
-	my_joystick.init()
-
-screen = pygame.display.set_mode([960, 720])
-
-should_stop = False
-while not should_stop:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            should_stop = True
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE:
-                should_stop = True
-
-    screen.fill([0,0,0])
-
-    print(("left_X_axis {} left_Y_axis {} right_X_axis {} right_Y_axis {}".format(get_joystick_power(my_joystick, 0), 
-                                                                                 get_joystick_power(my_joystick, 1) * -1, 
-                                                                                 get_joystick_power(my_joystick, 2), 
-                                                                                 get_joystick_power(my_joystick, 3) * -1)))
-
-
-    # print("button0 {} button1 {} button2 {} button3 {} button4 {} button5 {} button6 {} button7 {} button8 {} button9 {} button10 {} button11 {} button12 {} button13 {} button14 {} button15 {}".format(get_joystick_button_state(my_joystick, 0),
-    #                                                                                                                                                                                                                   get_joystick_button_state(my_joystick, 1), 
-    #                                                                                                                                                                                                                   get_joystick_button_state(my_joystick, 2),
-    #                                                                                                                                                                                                                   get_joystick_button_state(my_joystick, 3),
-    #                                                                                                                                                                                                                   get_joystick_button_state(my_joystick, 4),
-    #                                                                                                                                                                                                                   get_joystick_button_state(my_joystick, 5),
-    #                                                                                                                                                                                                                   get_joystick_button_state(my_joystick, 6),
-    #                                                                                                                                                                                                                   get_joystick_button_state(my_joystick, 7),
-    #                                                                                                                                                                                                                   get_joystick_button_state(my_joystick, 8),
-    #                                                                                                                                                                                                                   get_joystick_button_state(my_joystick, 9),
-    #                                                                                                                                                                                                                   get_joystick_button_state(my_joystick, 10),
-    #                                                                                                                                                                                                                   get_joystick_button_state(my_joystick, 11),
-    #                                                                                                                                                                                                                   get_joystick_button_state(my_joystick, 12),
-    #                                                                                                                                                                                                                   get_joystick_button_state(my_joystick, 13),
-    #                                                                                                                                                                                                                   get_joystick_button_state(my_joystick, 14),
-    #                                                                                                                                                                                                                   get_joystick_button_state(my_joystick, 15)))
-
-    pygame.display.update()
-
-    time.sleep(0.05)
+    for event in events:
+        if not event.ev_type == "Sync":
+                if event.code == 'ABS_Y':
+                    left_stickY_val = scale_js(int(event.state))
+                if event.code == 'ABS_X':
+                    left_stickX_val = scale_js(int(event.state))
+                if event.code == 'ABS_RY':
+                    right_stickY_val = scale_js(int(event.state))
+                if event.code == 'ABS_RX':
+                    right_stickX_val = scale_js(int(event.state))
+    
+    if left_stickX_val != 0:
+        print("left_stickX_val {}".format(left_stickX_val))
+    if left_stickY_val != 0:
+        print("left_stickY_val {}".format(left_stickY_val))
+    if right_stickX_val != 0:
+        print("right_stickX_val {}".format(right_stickX_val))
+    if right_stickY_val != 0:
+        print("right_stickY_val {}".format(right_stickY_val))
