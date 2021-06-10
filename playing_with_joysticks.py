@@ -92,5 +92,3 @@ while not should_stop:
     #                                                                                                                                                                                                                   get_joystick_button_state(my_joystick, 15)))
 
     pygame.display.update()
-
-    time.sleep(0.05)
