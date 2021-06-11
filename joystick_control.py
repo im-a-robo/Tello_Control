@@ -49,43 +49,43 @@ class FrontEnd(object):
             events = get_gamepad()
             for event in events:
                 if not event.ev_type == "Sync":
-                        if event.code == 'ABS_Y':
-                            for_back_velocity = self.scale_js(int(event.state))
-                        if event.code == 'ABS_X':
-                            left_right_velocity = self.scale_js(int(event.state))
-                        if event.code == 'ABS_RY':
-                            up_down_velocity = self.scale_js(int(event.state))
-                        if event.code == 'ABS_RX':
-                            yaw_velocity = self.scale_js(int(event.state))
-                        if event.code == 'BTN_TL' and event.state == 1:
-                            self.tello.flip_left()
-                        if event.code == 'BTN_TR' and event.state == 1:
-                            self.tello.flip_right()
-                        if event.code == 'BTN_SELECT' and event.state == 1:
-                            self.tello.takeoff()
-                            self.send_rc_control = True
-                        if event.code == 'BTN_START' and event.state == 1:
-                            self.tello.land()
-                            self.send_rc_control = False
-                        if event.code == 'BTN_NORTH' and event.code == 1:
-                            self.face_detection_mode == True
+                    if event.code == 'ABS_Y':
+                        for_back_velocity = self.scale_js(int(event.state))
+                    if event.code == 'ABS_X':
+                        left_right_velocity = self.scale_js(int(event.state))
+                    if event.code == 'ABS_RY':
+                        up_down_velocity = self.scale_js(int(event.state))
+                    if event.code == 'ABS_RX':
+                        yaw_velocity = self.scale_js(int(event.state))
+                    if event.code == 'BTN_TL' and event.state == 1:
+                        self.tello.flip_left()
+                    if event.code == 'BTN_TR' and event.state == 1:
+                        self.tello.flip_right()
+                    if event.code == 'BTN_SELECT' and event.state == 1:
+                        self.tello.takeoff()
+                        self.send_rc_control = True
+                    if event.code == 'BTN_START' and event.state == 1:
+                        self.tello.land()
+                        self.send_rc_control = False
+                    if event.code == 'BTN_NORTH' and event.code == 1:
+                        self.face_detection_mode == True
 
-            #TODO make function
-            if self.face_located and self.face_detection_mode:
-                if self.face_location[0] < 360:
-                    self.yaw_velocity = -(S / 4)
-                elif self.face_location[0] > 600:
-                    self.yaw_velocity = (S / 4)
-                elif self.face_location[0] > 360 and self.face_location[0] < 600:
-                    self.yaw_velocity = 0
-                    if self.distance > 30:
-                        self.difference = float(self.distance - 30)
-                        self.moveing_distance = int(round(self.difference * 2.54, 0))
-                        self.tello.move_forward(self.moveing_distance)
-                    else:
-                        self.for_back_velocity = 0
-            elif not self.face_located:
-                self.moveing_distance = 0
+            # #TODO make function
+            # if self.face_located and self.face_detection_mode:
+            #     if self.face_location[0] < 360:
+            #         self.yaw_velocity = -(S / 4)
+            #     elif self.face_location[0] > 600:
+            #         self.yaw_velocity = (S / 4)
+            #     elif self.face_location[0] > 360 and self.face_location[0] < 600:
+            #         self.yaw_velocity = 0
+            #         if self.distance > 30:
+            #             self.difference = float(self.distance - 30)
+            #             self.moveing_distance = int(round(self.difference * 2.54, 0))
+            #             self.tello.move_forward(self.moveing_distance)
+            #         else:
+            #             self.for_back_velocity = 0
+            # elif not self.face_located:
+            #     self.moveing_distance = 0
 
             if frame_read.stopped:
                 break
@@ -107,8 +107,7 @@ class FrontEnd(object):
             cv2.imshow("Tello Display", display_frame)
 
             if self.send_rc_control:
-                self.tello.send_rc_control(int(self.left_right_velocity), int(self.for_back_velocity),
-                    int(self.up_down_velocity), int(self.yaw_velocity))
+                self.tello.send_rc_control(int(self.left_right_velocity), int(self.for_back_velocity), int(self.up_down_velocity), int(self.yaw_velocity))
 
             #TODO See if removing provides faster input 
             time.sleep(1 / FPS)
@@ -123,23 +122,23 @@ class FrontEnd(object):
         return val if abs(val) > 30 else 0
     
     def face_detection(self, frame, face_cascade):
-            gray = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
-            faces = face_cascade.detectMultiScale(gray, 1.1, 4)
-        
-            if type(faces) != tuple:
-                for (x, y, w, h) in faces:
-                    one_face = faces[0]
-                    x = one_face[0]
-                    y = one_face[1]
-                    w = one_face[2]
-                    h = one_face[3]
-                    cv2.rectangle(frame, (x,y), (x+w, y+h), (255, 0, 0), 3)
-                self.distance = round(((2 * 3.14 * 180) / (w + h * 360) * 1000 + 5), 0) # in inches
-                self.face_location = (x, y)
-                self.face_located = True
-            else:
-                print('no face detected')
-                self.face_located = False
+        gray = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
+        faces = face_cascade.detectMultiScale(gray, 1.1, 4)
+    
+        if type(faces) != tuple:
+            for (x, y, w, h) in faces:
+                one_face = faces[0]
+                x = one_face[0]
+                y = one_face[1]
+                w = one_face[2]
+                h = one_face[3]
+                cv2.rectangle(frame, (x,y), (x+w, y+h), (255, 0, 0), 3)
+            self.distance = round(((2 * 3.14 * 180) / (w + h * 360) * 1000 + 5), 0) # in inches
+            self.face_location = (x, y)
+            self.face_located = True
+        else:
+            print('no face detected')
+            self.face_located = False
 
     def auton1(self):
         self.tello.move_forward(30)
