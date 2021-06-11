@@ -12,16 +12,6 @@ S = 120
 FPS = 60
 
 class FrontEnd(object):
-    """ Maintains the Tello display and moves it through the keyboard keys.
-        Press escape key to quit.
-        The controls are:
-            - T: Takeoff
-            - L: Land
-            - Arrow keys: Forward, backward, left and right.
-            - A and D: Counter clockwise and clockwise rotations (yaw)
-            - W and S: Up and down.
-    """
-
     def __init__(self):
         # Init Tello object that interacts with the Tello drone
         self.tello = Tello()
@@ -60,21 +50,23 @@ class FrontEnd(object):
             for event in events:
                 if not event.ev_type == "Sync":
                         if event.code == 'ABS_Y':
-                            for_back_velocity = scale_js(int(event.state))
+                            for_back_velocity = self.scale_js(int(event.state))
                         if event.code == 'ABS_X':
-                            left_right_velocity = scale_js(int(event.state))
+                            left_right_velocity = self.scale_js(int(event.state))
                         if event.code == 'ABS_RY':
-                            up_down_velocity = scale_js(int(event.state))
+                            up_down_velocity = self.scale_js(int(event.state))
                         if event.code == 'ABS_RX':
-                            yaw_velocity = scale_js(int(event.state))
+                            yaw_velocity = self.scale_js(int(event.state))
                         if event.code == 'BTN_TL' and event.state == 1:
                             self.tello.flip_left()
                         if event.code == 'BTN_TR' and event.state == 1:
                             self.tello.flip_right()
                         if event.code == 'BTN_SELECT' and event.state == 1:
                             self.tello.takeoff()
+                            self.send_rc_control = True
                         if event.code == 'BTN_START' and event.state == 1:
                             self.tello.land()
+                            self.send_rc_control = False
                         if event.code == 'BTN_NORTH' and event.code == 1:
                             self.face_detection_mode == True
 
@@ -118,6 +110,7 @@ class FrontEnd(object):
                 self.tello.send_rc_control(int(self.left_right_velocity), int(self.for_back_velocity),
                     int(self.up_down_velocity), int(self.yaw_velocity))
 
+            #TODO See if removing provides faster input 
             time.sleep(1 / FPS)
 
         # Call it always before finishing. To deallocate resources.

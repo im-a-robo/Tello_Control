@@ -66,3 +66,5 @@ while 1:
                     right_stickX_val = scale_js(int(event.state))
     
         print("left_stickX_val {} left_stickY_val {} right_stickX_val {} right_stickY_val {}".format(left_stickX_val, left_stickY_val, right_stickX_val, right_stickY_val))
+
+        time.sleep(0.05)
